@@ -3,9 +3,11 @@ var ports = [];
 var background = {
     errorMsg: null,
     uuid: null,
+    authMethod:null,
     connectToCloud: function (config) {
 
         cloudWebSocket.initWebSocket(config);
+        this.config = config;
     },
 
     onConnectedToCloud: function (event) {
@@ -43,7 +45,7 @@ var background = {
 
                 //Try silent login
                 background.uuid = receivedMessage.result;
-                silentLogin.login("https://"+cloudWebSocket.config.url, receivedMessage.result);
+                silentLogin.login(this.config, receivedMessage.result);
 
                 break;
             case "userLoginResult":
@@ -136,25 +138,39 @@ var background = {
                     }
 
                 } else {
-                    for (let i = 0; i < scriptManager.updatedContentScripts.length; i++) {
-                        try {
-                            await chrome.tabs.executeScript({code: (atob(scriptManager.updatedContentScripts[i].source))});
-                        } catch (error) {
-                            console.log(error);
+                    for (let k = 0; k < portManager.ports.length; k++) {
+
+                        //! HACK: needs to be fixed. custom functions do not load sometimes without this. due to race condition.....
+                        if (portManager.ports[k].p.sender.tab.status === "loading" && portManager.ports[k].p.sender.tab.url.indexOf("client/function-overview") !== -1) {
+                            continue;
                         }
 
-                    }
-                    for (let i = 0; i < scriptManager.updatedContentCSS.length; i++) {
-                        try {
-                            await chrome.tabs.insertCSS({code: (atob(scriptManager.updatedContentCSS[i].css))});
-                        } catch (error) {
-                            console.log(error);
+                        if (portManager.ports[k].startUpComplete) {
+                            let tabId = portManager.ports[k].p.sender.tab.id;
+
+
+                            for (let i = 0; i < scriptManager.updatedContentScripts.length; i++) {
+                                try {
+                                    await chrome.tabs.executeScript(tabId, {code: (atob(scriptManager.updatedContentScripts[i].source))});
+                                } catch (error) {
+                                    console.log(error);
+                                }
+
+                            }
+                            for (let i = 0; i < scriptManager.updatedContentCSS.length; i++) {
+                                try {
+                                    await chrome.tabs.insertCSS(tabId, {code: (atob(scriptManager.updatedContentCSS[i].css))});
+                                } catch (error) {
+                                    console.log(error);
+                                }
+
+                            }
+                            message.data.uiCollection.uiTabConfig = tabUiConfigManager.getConfigForTab(portManager.ports[k].p.sender.tab.id);
+                            portManager.ports[k].p.postMessage(message);
+
+
                         }
 
-                    }
-                    for (let i = 0; i < ports.length; i++) {
-
-                        ports[i].postMessage(message);
                     }
                 }
 
@@ -163,7 +179,7 @@ var background = {
 
                 break;
             case "cloudRequestResult":
-                getPort(receivedMessage.windowInfo.windowId, receivedMessage.windowInfo.tabId).postMessage(receivedMessage);
+                portManager.getPort(receivedMessage.windowInfo.tabId).p.postMessage(receivedMessage);
                 // ports[receivedMessage.data.tab_id].postMessage(receivedMessage);
                 break;
             case "userLogout" : {
@@ -222,6 +238,7 @@ var background = {
 
         chrome.tabs.query({},function (tabs) {
             tabs.forEach((tab) => {
+                console.log(tab);
                 if (tab.url.indexOf("https://"+cloudWebSocket.config.url + "/client/") !== -1) {
                     configTabs.push(tab);
                 }else if (tab.url.indexOf(backgroundUrl) !== -1) {
@@ -247,7 +264,7 @@ var background = {
                 if (tab.url) {
                     //only reload non system pages...
                     if (tab.url.startsWith("http")) {
-                        console.log("Reloading:", tab.url);
+
                         chrome.tabs.update(tab.id, {url: tab.url});
                     }
                 }
@@ -306,11 +323,16 @@ var background = {
 chrome.runtime.onConnect.addListener(function (p) {
     //if (scriptManager.profileReceived) {
     if (true) {
+
+        if (easyReading.isIgnoredUrl(p.sender.tab.url)) {
+            return;
+        }
         //Store port to content script
-        addPort(p);
+        portManager.addPort(p);
         // ports[p.sender.tab.id] = p;
         var currentPort = p;
         currentPort.onMessage.addListener(async function (m) {
+            console.log(m);
 
             switch (m.type) {
                 case "cloudRequest":
@@ -325,6 +347,7 @@ chrome.runtime.onConnect.addListener(function (p) {
                     if (scriptManager.profileReceived) {
                         if (scriptManager.debugMode) {
                             m.data = JSON.parse(JSON.stringify(scriptManager));
+                            m.data.uiCollection.uiTabConfig = tabUiConfigManager.getConfigForTab(p.sender.tab.id)
                             currentPort.postMessage(m);
                         } else {
                             for (let i = 0; i < scriptManager.contentScripts.length; i++) {
@@ -335,17 +358,37 @@ chrome.runtime.onConnect.addListener(function (p) {
                             }
 
                             m.data = JSON.parse(JSON.stringify(scriptManager));
+                            m.data.uiCollection.uiTabConfig = tabUiConfigManager.getConfigForTab(p.sender.tab.id);
                             currentPort.postMessage(m);
 
                         }
                     }
+                    break;
+                case "startUpComplete":
+
+                    let portInfo = portManager.getPort(p.sender.tab.id);
+                    portInfo.startUpComplete = true;
+                    console.log(p.sender.tab.id);
+                    console.log("startup complete");
+                    break;
+
+                case "saveUiConfigurationForTab": {
+
+                    tabUiConfigManager.addConfig(p.sender.tab.id,
+                        {
+                            id: m.id,
+                            configuration: m.configuration,
+                        });
+
+
+                }
 
                     break;
             }
         });
 
         currentPort.onDisconnect.addListener((p) => {
-            removePort(p);
+            portManager.removePort(p);
             if (p.error) {
                 console.log(`Disconnected due to an error: ${p.error.message}`);
             }
@@ -355,37 +398,105 @@ chrome.runtime.onConnect.addListener(function (p) {
 
 });
 
+let portManager = {
+    ports: [],
+    addPort: function (p) {
+        let portInfo = {
+            p: p,
+            startUpComplete: false,
+        };
 
-function addPort(p) {
-    for (let i = 0; i < ports.length; i++) {
-        if (ports[i].sender.tab.id === p.sender.tab.id) {
+        for (let i = 0; i < portManager.ports.length; i++) {
+            if (portManager.ports[i].p.sender.tab.id === p.sender.tab.id) {
 
-            ports[i] = p;
-            return;
+                portManager.ports[i] = portInfo;
+                console.log("adding new port");
+                return;
+            }
         }
-    }
-    ports.push(p);
-}
+        portManager.ports.push(portInfo);
+    },
+    removePort: function (p) {
+        for (let i = 0; i < portManager.ports.length; i++) {
+            if (portManager.ports[i].p === p) {
+                portManager.ports.splice(i, 1);
+                return;
+            }
+        }
 
-function removePort(p) {
+    },
 
-    for (let i = 0; i < ports.length; i++) {
-        if (ports[i] === p) {
-            ports.splice(i, 1);
-            return;
+    getPort: function (tab_id) {
+        for (let i = 0; i < portManager.ports.length; i++) {
+            if (portManager.ports[i].p.sender.tab.id === tab_id) {
+                return portManager.ports[i];
+            }
         }
 
     }
-}
 
-function getPort(window_id, tab_id) {
 
-    for (let i = 0; i < ports.length; i++) {
-        if (ports[i].sender.tab.windowId === window_id && ports[i].sender.tab.id === tab_id) {
-            return ports[i];
+};
+
+chrome.tabs.onRemoved.addListener(function (tabId, removeInfo) {
+    tabUiConfigManager.removeTab(tabId);
+});
+
+chrome.tabs.onCreated.addListener(function (tab) {
+
+    tabUiConfigManager.addTab(tab.id)
+
+});
+
+let tabUiConfigManager = {
+    tabConfigs: [],
+    addTab: function (tabID) {
+        this.tabConfigs.push({
+            tabID: tabID,
+            uiConfigurations: [],
+        })
+    },
+    removeTab: function (tabID) {
+        for (let i = 0; i < this.tabConfigs.length; i++) {
+            if (this.tabConfigs[i].tabID === tabID) {
+                this.tabConfigs.splice(i, 1);
+
+                return;
+            }
         }
+    },
+
+    addConfig: function (tabID, configuration) {
+        for (let i = 0; i < this.tabConfigs.length; i++) {
+            if (this.tabConfigs[i].tabID === tabID) {
+
+                //Try to update...
+                for (let j = 0; j < this.tabConfigs[i].uiConfigurations.length; j++) {
+                    if (this.tabConfigs[i].uiConfigurations[j].id === configuration.id) {
+                        this.tabConfigs[i].uiConfigurations[j] = configuration;
+                        return;
+                    }
+                }
+
+                this.tabConfigs[i].uiConfigurations.push(configuration);
+
+
+            }
+        }
+    },
+
+    getConfigForTab(tabID) {
+        for (let i = 0; i < this.tabConfigs.length; i++) {
+            if (this.tabConfigs[i].tabID === tabID) {
+                return this.tabConfigs[i].uiConfigurations;
+
+            }
+        }
+
+        return [];
     }
-}
+
+};
 
 chrome.browserAction.onClicked.addListener(() => {
 

@@ -80,7 +80,6 @@ var scriptManager = {
                     scriptManager.insertComponent(tool.widget,update);
                 }
                 if (tool.function.source.type === "LocalFunction") {
-
                     scriptManager.insertComponent(tool.function,update);
                 }
                 if (tool.presentation) {
@@ -120,6 +119,7 @@ var scriptManager = {
     insertScriptsOfComponent: function (component,update) {
 
         let versionID = component.source.id + "/" + component.source.version + "/";
+
         if(!component.source.version){
             //Function of an engine detected....
             versionID = component.source.engine.id + "/" + component.source.engine.version + "/";

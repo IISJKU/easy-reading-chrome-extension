@@ -10,35 +10,28 @@ var easyReading = {
                 url: "dev.easyreading-cloud.eu",
             },
             {
-                description: "Production server",
-                url: "easy-reading.eu-gb.mybluemix.net",
-            },
-            {
-                description: "Development server",
-                url: "dev-easy-reading.eu-gb.mybluemix.net",
-            },
-            {
                 description: "Localhost",
                 url: "localhost:8080"
             }
         ],
+        ignoredConfigSites: [
+            "/client/function-editor",
+        ],
         init: function () {
 
-           chrome.storage.local.get(function (configuration) {
+            chrome.storage.local.get(function (configuration) {
 
-               if($.isEmptyObject(configuration)){
-                   configuration = easyReading.getDefaultConfig();
+                if ($.isEmptyObject(configuration)) {
+                    configuration = easyReading.getDefaultConfig();
 
-               }
-               easyReading.config = configuration;
-               easyReading.saveConfig();
-               easyReading.startup();
+                }
+                easyReading.config = configuration;
+                easyReading.saveConfig();
+                easyReading.startup();
             });
 
 
-        }
-
-        ,
+        },
         startup: function () {
 
 
@@ -70,6 +63,18 @@ var easyReading = {
         updateEndpointIndex: function (index) {
             easyReading.config.cloudEndpointIndex = index;
             easyReading.saveConfig();
+        },
+        isIgnoredUrl(url) {
+            for (let i = 0; i < easyReading.ignoredConfigSites.length; i++) {
+
+                let currentURL = easyReading.cloudEndpoints[easyReading.config.cloudEndpointIndex].url;
+                if (url.includes(currentURL + easyReading.ignoredConfigSites[i])) {
+                    return true;
+                }
+
+            }
+
+            return false;
         }
 
 
