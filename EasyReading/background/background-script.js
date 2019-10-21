@@ -57,7 +57,7 @@ var background = {
                     let configTabIds = [];
                     if (configTabs.length !== 0) {
                         configTabs.forEach((tab) => {
-                            chrome.tabs.update(tab.id, {url: chrome.extension.getURL('/background/config/config.html')});
+                     //       chrome.tabs.update(tab.id, {url: chrome.extension.getURL('/background/config/config.html')});
                             configTabIds.push(tab.id);
                         });
                     }

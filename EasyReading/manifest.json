@@ -3,7 +3,7 @@
   "manifest_version": 2,
   "name": "Easy Reader",
   "version": "1.0",
-
+  "default_locale": "en",
   "permissions": [
     "storage",
     "webNavigation",
@@ -48,6 +48,7 @@
     "scopes":["openid", "email", "profile"]
   },
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAufykpxdfgpM66sPgNzPnm8Xup4m7uWp7ilfsgSA8T+ArSt4E/NzJ59ilvl1KxCvQSWyu4B+xHQpXBAyaFqW24TzoO/SG8ScX8aNWBZEi3+e/jmtAEBsVBoDGk6VnZof7C1fHnnmZChJLBDO8m55t9IqrYBM2jU1mz9dhvd8WrRWvUHYNCuWoRZlo5clbgskCCmrU6usUVergHo39nRadvbK9DKn+qL88EHK0MyeX4+4lSsZ5O97nI8IGX8tRmQ5nGgjwefV8/8ArSBHBzyjirHbV48zP72raT96hVs0DtJOlZdpyrehZWf6MTplXiQK7pjkeAqQEkkqAKjDVIPSuXwIDAQAB"
+
 
 }
 

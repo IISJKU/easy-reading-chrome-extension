@@ -1,5 +1,12 @@
 var isEasyReadingConfigPage = true;
+
 $(document).ready(function () {
+
+    $('#loginMessage').html(chrome.i18n.getMessage("loginMessage"));
+    $('#loginDescription').html(chrome.i18n.getMessage("loginDescription"));
+    $('#loginGoogle').html(chrome.i18n.getMessage("loginGoogle"));
+    $('#loginFacebook').html(chrome.i18n.getMessage("loginFacebook"));
+    $('#anonymLogin').html(chrome.i18n.getMessage("loginAnonym"));
 
     let backgroundPage = chrome.extension.getBackgroundPage();
     let easyReadingConfig = backgroundPage.easyReading.config;
@@ -68,6 +75,11 @@ $(document).ready(function () {
 
         };
         backgroundPage.background.connectToCloud(config);
+    });
+
+    $("#toogleSetting").click(function () {
+        $('#cloudServerSelect').toggle();
+        $('#toogleSetting').toggleClass("selected");
     });
 
 
