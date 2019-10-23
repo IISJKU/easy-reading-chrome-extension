@@ -49,8 +49,8 @@ var cloudWebSocket = {
         let errorMsg = "Could not connect to: "+event.currentTarget.url;
         cloudWebSocket.isConnected = false;
         cloudWebSocket.webSocket = undefined;
-     //   background.onDisconnectFroCloud(errorMsg);
-     //   cloudWebSocket.reconnect();
+        background.onDisconnectFroCloud(errorMsg);
+        cloudWebSocket.reconnect();
     },
     onError: function (event) {
         let errorMsg = "Could not connect to: "+event.currentTarget.url;

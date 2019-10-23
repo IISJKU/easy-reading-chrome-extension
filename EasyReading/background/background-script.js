@@ -76,7 +76,7 @@ var background = {
                         chrome.tabs.query({},async function (tabs) {
                             tabs.forEach( async (tab) => {
 
-                                if (tab.url.indexOf("chrome://") === -1 && !configTabIds.includes(tab.id)) {
+                                if (tab.url.indexOf("chrome://") === -1 && !easyReading.isIgnoredUrl(tab.url)) {
 
                                     if (tab.status === "complete") {
 
@@ -132,9 +132,10 @@ var background = {
 
                 if (scriptManager.debugMode) {
 
-                    for (let i = 0; i < ports.length; i++) {
+                    for (let i = 0; i < portManager.ports.length; i++) {
 
-                        ports[i].postMessage(message);
+                        message.data.uiCollection.uiTabConfig = tabUiConfigManager.getConfigForTab(portManager.ports[i].p.sender.tab.id);
+                        portManager.ports[i].p.postMessage(message);
                     }
 
                 } else {
@@ -283,13 +284,13 @@ var background = {
        chrome.tabs.query({},async function (tabs) {
            tabs.forEach(async (tab) => {
 
-               if (tab.url !== "about:debugging") {
+           //    if (tab.url.indexOf("chrome://") === -1 && !easyReading.isIgnoredUrl(tab.url)) {
 
                    if (tab.status === "complete") {
 
                        chrome.tabs.sendMessage(tab.id, m);
                    }
-               }
+           //    }
 
 
            });
