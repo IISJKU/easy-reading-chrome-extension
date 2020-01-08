@@ -187,9 +187,28 @@ var background = {
 
                 await background.logoutUser();
 
+                break;
 
             }
+            case "recommendation":{
+
+                console.log(receivedMessage);
+                chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                    let currTab = tabs[0];
+                    if (currTab) { // Sanity check
+                        /* do stuff */
+                        let port = portManager.getPort(currTab.id);
+                        if(port){
+                            port.p.postMessage(receivedMessage);
+                        }
+                    }
+                });
+
+
                 break;
+            }
+
+
             default:
                 console.log("Error: Unknown message type:" + receivedMessage.type);
                 console.log(message);
@@ -342,6 +361,10 @@ chrome.runtime.onConnect.addListener(function (p) {
                         tabId: p.sender.tab.id,
                         windowId: p.sender.tab.windowId,
                     };
+                    cloudWebSocket.sendMessage(JSON.stringify(m));
+                    break;
+                case "recommendationResult":
+
                     cloudWebSocket.sendMessage(JSON.stringify(m));
                     break;
                 case "getUserProfile":
