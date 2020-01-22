@@ -12,7 +12,7 @@ var silentLogin = {
         this.httpRequest.onreadystatechange = this.onReadyStateChange;
         this.httpRequest.send();
     },
-    onReadyStateChange(e){
+    async onReadyStateChange(e){
         if (e.target.readyState === XMLHttpRequest.DONE && e.target.status === 200) {
             let authFailed = false;
             try {
@@ -28,16 +28,29 @@ var silentLogin = {
 
             if(authFailed){
 
-                chrome.runtime.openOptionsPage();
-                let optionsPage = background.getActiveOptionsPage();
+                if(background.reconnect){
 
-                if(optionsPage){
-                    optionsPage.silentLoginFailed(silentLogin.getLoginURL());
+                    background.reconnect = false;
+                    background.logoutUser("Lost connection!");
+
+                }else {
+                    await chrome.runtime.openOptionsPage();
+                    let optionsPage = await background.getActiveOptionsPage();
+
+                    if (optionsPage) {
+                        console.log("silent login:");
+                        console.log(silentLogin.getLoginURL());
+
+                        optionsPage.silentLoginFailed(silentLogin.getLoginURL());
+                    }
                 }
+            }else{
+                background.reconnect = false;
             }
 
         }else{
-            console.log("ERROR");
+            console.log("ERROR-Login");
+            console.log(e);
         }
     },
 

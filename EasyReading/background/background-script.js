@@ -4,10 +4,15 @@ var background = {
     errorMsg: null,
     uuid: null,
     authMethod:null,
-    connectToCloud: function (config) {
+    userLoggedIn: false,
 
-        cloudWebSocket.initWebSocket(config);
-        this.config = config;
+    connectToCloud: async function (config) {
+
+        if(cloudWebSocket.initWebSocket({...config})){
+            background.config = {...config};
+        }else{
+            await background.logoutUser("Could not connect to cloud server!");
+        }
     },
 
     onConnectedToCloud: function (event) {
@@ -74,8 +79,9 @@ var background = {
                         };
 
                         chrome.tabs.query({},async function (tabs) {
-                            tabs.forEach( async (tab) => {
 
+                            for(let i=0; i < tabs.length; i++){
+                                let tab = tabs[i];
                                 if (tab.url.indexOf("chrome://") === -1 && !easyReading.isIgnoredUrl(tab.url)) {
 
                                     if (tab.status === "complete") {
@@ -104,12 +110,21 @@ var background = {
 
                                             chrome.tabs.sendMessage(tab.id, m);
 
+
+
                                         }
                                     }
                                 }
+                            }
 
 
+                            background.userLoggedIn = true;
+                            //Update options pages that logging in was successfull
+                            let activeOptionPages = background.getActiveOptionPages();
+                            activeOptionPages.forEach((optionsPage) => {
+                                optionsPage.updateStatus();
                             });
+
                         });
 
 
@@ -176,12 +191,11 @@ var background = {
                 }
 
 
-                // background.updateTabs();
 
                 break;
             case "cloudRequestResult":
                 portManager.getPort(receivedMessage.windowInfo.tabId).p.postMessage(receivedMessage);
-                // ports[receivedMessage.data.tab_id].postMessage(receivedMessage);
+
                 break;
             case "userLogout" : {
 
@@ -192,11 +206,10 @@ var background = {
             }
             case "recommendation":{
 
-                console.log(receivedMessage);
                 chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
                     let currTab = tabs[0];
-                    if (currTab) { // Sanity check
-                        /* do stuff */
+                    if (currTab) {
+
                         let port = portManager.getPort(currTab.id);
                         if(port){
                             port.p.postMessage(receivedMessage);
@@ -217,10 +230,20 @@ var background = {
         // console.log(message);
     },
     onDisconnectFroCloud: async function (error) {
-        background.errorMsg = error;
-        if (scriptManager.profileReceived || background.getActiveOptionsPage()) {
-            background.logoutUser(error);
+        await background.shutdownTabs();
+        if (background.userLoggedIn) {
+            background.connectToCloud(background.config);
+            background.reconnect = true;
+        } else {
+
+            background.errorMsg = error;
+            if (scriptManager.profileReceived || background.getActiveOptionsPage()) {
+                await background.logoutUser(error);
+            }
+
+            cloudWebSocket.reconnect();
         }
+
 
     },
 
@@ -259,7 +282,7 @@ var background = {
         chrome.tabs.query({},function (tabs) {
             tabs.forEach((tab) => {
                 console.log(tab);
-                if (tab.url.indexOf("https://"+cloudWebSocket.config.url + "/client/") !== -1) {
+                if (tab.url.indexOf("https://"+cloudWebSocket.config.url) !== -1) {
                     configTabs.push(tab);
                 }else if (tab.url.indexOf(backgroundUrl) !== -1) {
                     if(includeOptionsPage){
@@ -272,6 +295,17 @@ var background = {
         });
 
 
+
+
+    },
+    reloadAllConfigurationTabs: async function () {
+        chrome.tabs.query({}, (tabs) => {
+            tabs.forEach((tab) => {
+                if (tab.url.indexOf("https://" + cloudWebSocket.config.url) !== -1) {
+                    browser.tabs.reload(tab.id);
+                }
+            });
+        });
 
 
     },
@@ -293,49 +327,52 @@ var background = {
     },
 
     logoutUser: async function (errorMsg) {
+        background.userLoggedIn = false;
         scriptManager.reset();
+        cloudWebSocket.closeWebSocket();
+        await background.shutdownTabs();
 
+        background.getOpenConfigTabs(async function (configTabs) {
+            if (configTabs.length > 0) {
+                //Close other tabs
+                for (let i = 1; i < configTabs.length; i++) {
+                    await chrome.tabs.remove(configTabs[i].id);
+                }
+
+                await chrome.tabs.update(configTabs[0].id, {url: chrome.extension.getURL('/background/config/config.html')});
+            }
+
+            let activeOptionPages = background.getActiveOptionPages();
+            activeOptionPages.forEach((optionsPage) => {
+                optionsPage.updateStatus(errorMsg);
+            });
+
+            if (configTabs.length === 0 && activeOptionPages.length === 0) {
+                chrome.runtime.openOptionsPage();
+            }
+
+            setTimeout(async function () {
+                await background.reloadAllConfigurationTabs();
+            }, 300);
+
+        });
+
+
+    },
+    async shutdownTabs() {
         let m = {
             type: "userLogout",
             data: null,
         };
 
-       chrome.tabs.query({},async function (tabs) {
-           tabs.forEach(async (tab) => {
+        chrome.tabs.query({}, function (tabs) {
+            tabs.forEach(async (tab) => {
+                if (tab.status === "complete") {
 
-           //    if (tab.url.indexOf("chrome://") === -1 && !easyReading.isIgnoredUrl(tab.url)) {
-
-                   if (tab.status === "complete") {
-
-                       chrome.tabs.sendMessage(tab.id, m);
-                   }
-           //    }
-
-
-           });
-
-           background.getOpenConfigTabs(function (configTabs) {
-               configTabs.forEach(async (tab) => {
-                   chrome.tabs.update(tab.id, {url: chrome.extension.getURL('/background/config/config.html')});
-               });
-
-               let activeOptionPages = background.getActiveOptionPages();
-               activeOptionPages.forEach((optionsPage) =>{
-                   optionsPage.updateStatus(errorMsg);
-               });
-
-               if (configTabs.length === 0 && activeOptionPages.length === 0) {
-                   chrome.runtime.openOptionsPage();
-               }
-           });
-
-       });
-
-
-
-
-
-
+                    chrome.tabs.sendMessage(tab.id, m);
+                }
+            });
+        });
     }
 };
 
@@ -525,12 +562,19 @@ let tabUiConfigManager = {
 chrome.browserAction.onClicked.addListener(() => {
 
     background.getOpenConfigTabs(function (configTabs) {
-        if (configTabs.length !== 0) {
-            chrome.tabs.update(configTabs[0].id, {active: true});
-        } else {
-            chrome.runtime.openOptionsPage();
+        if (configTabs.length > 0) {
+            for(let i=0; i < configTabs.length; i++){
+                if (configTabs[i].url.indexOf("https://" + cloudWebSocket.config.url+"/client") !== -1) {
+                    chrome.tabs.update(configTabs[i].id, {active: true});
+
+                    return;
+                }
+            }
         }
-    } ,true);
+
+        chrome.runtime.openOptionsPage();
+
+        } ,true);
 
 });
 

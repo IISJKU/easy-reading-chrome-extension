@@ -68,7 +68,7 @@ let contentScriptController = {
                             console.log("starting up");
                             //easyReading.shutdown();
                             //easyReading.startup( contentScriptController.scriptManager.uiCollection);
-                            console.log(contentScriptController.scriptManager.uiCollection);
+                            //console.log(contentScriptController.scriptManager.uiCollection);
                             easyReading.update( contentScriptController.scriptManager.uiCollection);
                         }
 
@@ -79,6 +79,7 @@ let contentScriptController = {
                 break;
             case "userLogout":{
 
+                this.profileReceived = false;
 
                 if(this.scriptManager.debugMode){
                     let event = new CustomEvent("userLogout");

@@ -32,49 +32,60 @@ $(document).ready(function () {
 
     $("#googleSignInButton").click(function () {
 
-        let cloudEndpointIndex = $('input[name=cloudServer]:checked', '.cloudServerSelect').val();
-        backgroundPage.easyReading.updateEndpointIndex(cloudEndpointIndex);
+        if(backgroundPage.background.userLoggedIn){
+            updateStatus();
+        }else {
 
-        let config = {
-            url: backgroundPage.easyReading.cloudEndpoints[cloudEndpointIndex].url,
-            authMethod: "google",
+            let cloudEndpointIndex = $('input[name=cloudServer]:checked', '.cloudServerSelect').val();
+            backgroundPage.easyReading.updateEndpointIndex(cloudEndpointIndex);
 
-        };
-        backgroundPage.background.connectToCloud(config);
+            let config = {
+                url: backgroundPage.easyReading.cloudEndpoints[cloudEndpointIndex].url,
+                authMethod: "google",
+
+            };
+            backgroundPage.background.connectToCloud(config);
+        }
     });
 
     $("#fbSignInButton").click(function () {
+        if(backgroundPage.background.userLoggedIn){
+            updateStatus();
+        }else {
+            let cloudEndpointIndex = $('input[name=cloudServer]:checked', '.cloudServerSelect').val();
+            backgroundPage.easyReading.updateEndpointIndex(cloudEndpointIndex);
 
-        let cloudEndpointIndex = $('input[name=cloudServer]:checked', '.cloudServerSelect').val();
-        backgroundPage.easyReading.updateEndpointIndex(cloudEndpointIndex);
+            let config = {
+                url: backgroundPage.easyReading.cloudEndpoints[cloudEndpointIndex].url,
+                authMethod: "fb",
 
-        let config = {
-            url: backgroundPage.easyReading.cloudEndpoints[cloudEndpointIndex].url,
-            authMethod: "fb",
-
-        };
-        backgroundPage.background.connectToCloud(config);
+            };
+            backgroundPage.background.connectToCloud(config);
+        }
     });
 
     $("#anonymLogin").click(function () {
+        if(backgroundPage.background.userLoggedIn){
+            updateStatus();
+        }else {
+            let cloudEndpointIndex = $('input[name=cloudServer]:checked', '.cloudServerSelect').val();
+            backgroundPage.easyReading.updateEndpointIndex(cloudEndpointIndex);
 
-        let cloudEndpointIndex = $('input[name=cloudServer]:checked', '.cloudServerSelect').val();
-        backgroundPage.easyReading.updateEndpointIndex(cloudEndpointIndex);
+            let userLang = (navigator.language || navigator.userLanguage).split("-");
+            let userLangCode = "en";
+            if (userLang.length > 0) {
+                userLangCode = userLang[0];
+            }
 
-        let userLang = (navigator.language || navigator.userLanguage).split("-");
-        let userLangCode = "en";
-        if(userLang.length > 0){
-            userLangCode = userLang[0];
+
+            let config = {
+                url: backgroundPage.easyReading.cloudEndpoints[cloudEndpointIndex].url,
+                authMethod: "anonym",
+                lang: userLangCode,
+
+            };
+            backgroundPage.background.connectToCloud(config);
         }
-
-
-        let config = {
-            url: backgroundPage.easyReading.cloudEndpoints[cloudEndpointIndex].url,
-            authMethod: "anonym",
-            lang: userLangCode,
-
-        };
-        backgroundPage.background.connectToCloud(config);
     });
 
     $("#toogleSetting").click(function () {

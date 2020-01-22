@@ -2,11 +2,11 @@ var easyReading = {
         config: null,
         cloudEndpoints: [
             {
-                description: "AWS Prod server",
+                description: "Prod server",
                 url: "easyreading-cloud.eu",
             },
             {
-                description: "AWS DEV server",
+                description: "DEV server",
                 url: "dev.easyreading-cloud.eu",
             },
             {
