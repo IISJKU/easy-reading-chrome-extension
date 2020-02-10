@@ -45,8 +45,14 @@ let contentScriptController = {
                     this.initDebugMode(injection);
                 }else{
                     $(document).ready(function () {
+                        document.removeEventListener('easyReadingUpdate', contentScriptController.easyReadingUiUpdate);
+                        document.addEventListener('easyReadingUpdate', contentScriptController.easyReadingUiUpdate);
                         console.log("starting up");
+                        if(easyReading.busyAnimation){
+                            easyReading.busyAnimation.stopAnimation();
+                        }
                         easyReading.startup( contentScriptController.scriptManager.uiCollection);
+
                     });
 
                 }
@@ -65,16 +71,19 @@ let contentScriptController = {
                 }else{
                     $(document).ready(function () {
                         if (typeof easyReading !== 'undefined') {
-                            console.log("starting up");
-                            //easyReading.shutdown();
-                            //easyReading.startup( contentScriptController.scriptManager.uiCollection);
-                            //console.log(contentScriptController.scriptManager.uiCollection);
+                            console.log("starting up updated");
+                            document.removeEventListener('easyReadingUpdate', contentScriptController.easyReadingUiUpdate);
+                            document.addEventListener('easyReadingUpdate', contentScriptController.easyReadingUiUpdate);
+                            if(easyReading.busyAnimation){
+                                easyReading.busyAnimation.stopAnimation();
+                            }
                             easyReading.update( contentScriptController.scriptManager.uiCollection);
                         }
 
                     });
 
                 }
+
                 this.portToBackGroundScript.postMessage({type: "startUpComplete"});
                 break;
             case "userLogout":{
@@ -103,6 +112,10 @@ let contentScriptController = {
             }
 
         }
+    },
+    easyReadingUiUpdate:function (event){
+        easyReading.busyAnimation.startAnimation();
+        console.log("HIII");
     },
     sendMessageToBackgroundScript: function(message) {
         this.portToBackGroundScript.postMessage(message);
