@@ -54,6 +54,7 @@ var background = {
 
                 break;
             case "userLoginResult":
+                tabUiConfigManager.clear();
                 scriptManager.reset();
                 scriptManager.loadScripts(receivedMessage.result, cloudWebSocket.config.url);
 
@@ -560,6 +561,9 @@ let tabUiConfigManager = {
         }
 
         return [];
+    },
+    clear(){
+        this.tabConfigs = [];
     }
 
 };
@@ -569,6 +573,15 @@ chrome.browserAction.onClicked.addListener(() => {
     background.getOpenConfigTabs(function (configTabs) {
         if (configTabs.length > 0) {
             for(let i=0; i < configTabs.length; i++){
+
+                if (configTabs[i].url.indexOf("https://" + cloudWebSocket.config.url+"/client/finished") !== -1) {
+                    chrome.tabs.update(configTabs[i].id, {
+                        active: true,
+                        url:"https://" + cloudWebSocket.config.url+"/client/welcome"
+                    });
+                    return;
+                }
+
                 if (configTabs[i].url.indexOf("https://" + cloudWebSocket.config.url+"/client") !== -1) {
                     chrome.tabs.update(configTabs[i].id, {active: true});
 
@@ -577,7 +590,16 @@ chrome.browserAction.onClicked.addListener(() => {
             }
         }
 
-        chrome.runtime.openOptionsPage();
+
+        if(background.userLoggedIn){
+
+           chrome.tabs.create({
+                url:"https://" + cloudWebSocket.config.url+"/client/welcome"
+            });
+        }else{
+            chrome.runtime.openOptionsPage();
+        }
+
 
         } ,true);
 
