@@ -2,11 +2,22 @@ var isEasyReadingConfigPage = true;
 
 $(document).ready(function () {
 
-    $('#loginMessage').html(chrome.i18n.getMessage("loginMessage"));
-    $('#loginDescription').html(chrome.i18n.getMessage("loginDescription"));
-    $('#loginGoogle').html(chrome.i18n.getMessage("loginGoogle"));
-    $('#loginFacebook').html(chrome.i18n.getMessage("loginFacebook"));
-    $('#anonymLogin').html(chrome.i18n.getMessage("loginAnonym"));
+
+    $("#heading1").html(chrome.i18n.getMessage("login_welcome"));
+    $("#heading2_1").html(chrome.i18n.getMessage("login_type_text"));
+
+    $("#loginGoogle").html(chrome.i18n.getMessage("login_type_google_text"));
+    $("#button1_text_1").html(chrome.i18n.getMessage("login_type_google_p1"));
+    $("#button1_text_2").html(chrome.i18n.getMessage("login_type_google_p2"));
+
+    $("#loginFacebook").html(chrome.i18n.getMessage("login_type_facebook_text"));
+    $("#button2_text_1").html(chrome.i18n.getMessage("login_type_facebook_p1"));
+    $("#button2_text_2").html(chrome.i18n.getMessage("login_type_facebook_p2"));
+
+    $("#anonym").html(chrome.i18n.getMessage("login_type_anonymous_text"));
+    $("#button3_text_1").html(chrome.i18n.getMessage("login_type_anonymous_p1"));
+    $("#button3_text_2").html(chrome.i18n.getMessage("login_type_anonymous_p2"));
+
 
     let backgroundPage = chrome.extension.getBackgroundPage();
     let easyReadingConfig = backgroundPage.easyReading.config;
@@ -18,12 +29,12 @@ $(document).ready(function () {
             selectEndpointURLFieldSetHTML+=
                 ' <input type="radio" id="endpoint'+i+'" name="cloudServer" value="'+i+'" checked>\n' +
                 ' <label for="endpoint'+i+'">'+backgroundPage.easyReading.cloudEndpoints[i].description+'</label>\n' +
-                ' <br>';
+                ' ';
         }else{
             selectEndpointURLFieldSetHTML+=
                 ' <input type="radio" id="endpoint'+i+'" name="cloudServer" value="'+i+'">\n' +
                 ' <label for="endpoint'+i+'">'+backgroundPage.easyReading.cloudEndpoints[i].description+'</label>\n' +
-                ' <br>';
+                '';
         }
 
     }
@@ -31,11 +42,9 @@ $(document).ready(function () {
     $("#cloudServerSelect").html(selectEndpointURLFieldSetHTML);
 
     $("#googleSignInButton").click(function () {
-
         if(backgroundPage.background.userLoggedIn){
             updateStatus();
         }else {
-
             let cloudEndpointIndex = $('input[name=cloudServer]:checked', '.cloudServerSelect').val();
             backgroundPage.easyReading.updateEndpointIndex(cloudEndpointIndex);
 
@@ -49,9 +58,14 @@ $(document).ready(function () {
     });
 
     $("#fbSignInButton").click(function () {
+
+        var x = document.getElementById("myAudio");
+        x.play();
+
         if(backgroundPage.background.userLoggedIn){
             updateStatus();
         }else {
+
             let cloudEndpointIndex = $('input[name=cloudServer]:checked', '.cloudServerSelect').val();
             backgroundPage.easyReading.updateEndpointIndex(cloudEndpointIndex);
 
@@ -65,15 +79,16 @@ $(document).ready(function () {
     });
 
     $("#anonymLogin").click(function () {
+
         if(backgroundPage.background.userLoggedIn){
             updateStatus();
-        }else {
+        }else{
             let cloudEndpointIndex = $('input[name=cloudServer]:checked', '.cloudServerSelect').val();
             backgroundPage.easyReading.updateEndpointIndex(cloudEndpointIndex);
 
             let userLang = (navigator.language || navigator.userLanguage).split("-");
             let userLangCode = "en";
-            if (userLang.length > 0) {
+            if(userLang.length > 0){
                 userLangCode = userLang[0];
             }
 
@@ -85,7 +100,10 @@ $(document).ready(function () {
 
             };
             backgroundPage.background.connectToCloud(config);
+
         }
+
+
     });
 
     $("#toogleSetting").click(function () {
@@ -99,7 +117,6 @@ $(document).ready(function () {
 });
 
 function updateStatus(error) {
-
     $("#debugModeInfo").empty();
     let backgroundPage = chrome.extension.getBackgroundPage();
 

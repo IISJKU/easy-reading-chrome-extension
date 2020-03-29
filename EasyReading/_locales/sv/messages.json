@@ -1,31 +1,53 @@
 {
   "extensionName": {
-    "message": "Easy Reader",
-    "description": "Name of the extension."
+    "message": "Easy Reading",
+    "description": "Namn på tillägget."
   },
   "extensionDescription": {
-    "message": "Hjälper människor med svårt webbinnehåll.",
-    "description": "Description of the extension."
+    "message": "Hjälper personer att förstå webbplatser med svårt innehåll.",
+    "description": "Beskrivning av tillägget."
   },
 
-
-  "loginMessage": {
-    "message": "Easy Reader Logga in"
+  "login_welcome": {
+    "message": "Tack för att du har installerat Easy Reading!"
   },
 
-  "loginDescription": {
-    "message": "Logga in eller registrera dig med:"
+  "login_type_text": {
+    "message": "Hur vill du logga in?"
   },
 
-  "loginGoogle": {
-    "message": "Google"
+  "login_type_google_text": {
+    "message": "med Google"
   },
 
-  "loginFacebook": {
-    "message": "Fortsätt med  Facebook"
+  "login_type_google_p1": {
+    "message": "Har du ett Google-konto? <br> Då kan du använda det för att logga in.  "
   },
 
-  "loginAnonym": {
-    "message": "Anonym inloggning"
+  "login_type_google_p2": {
+    "message": "Dina personliga inställningar kommer att sparas.<br>De är kvar även om du stänger webbläsaren och startar om. "
+  },
+
+  "login_type_facebook_text": {
+    "message": "med Facebook"
+  },
+
+  "login_type_facebook_p1": {
+    "message": "Har du ett Facebook-konto?<br>Då kan du använda det för att logga in."
+  },
+
+  "login_type_facebook_p2": {
+    "message": "Dina personliga inställningar kommer att sparas.<br>De är kvar även om du stänger webbläsaren och startar om."
+  },
+
+  "login_type_anonymous_text": {
+    "message": "Anonymt"
+  },
+
+  "login_type_anonymous_p1": {
+    "message": "Vill du hellre använda Easy Reading utan ett konto?<br>Då kan du logga in som en anonym användare."
+  },
+  "login_type_anonymous_p2": {
+    "message": "Dina personliga inställningar kommer inte att sparas.<br>När du loggar ut kommer allt du har ställt in att tas bort."
   }
 }
