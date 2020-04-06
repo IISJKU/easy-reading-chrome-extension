@@ -75,7 +75,10 @@ var cloudWebSocket = {
     },
     sendMessage: function (message) {
         if (this.webSocket) {
-            this.webSocket.send(message);
+            if(this.webSocket.readyState === WebSocket.OPEN){
+                this.webSocket.send(message);
+            }
+
         }
     },
 
