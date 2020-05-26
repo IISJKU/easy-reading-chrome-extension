@@ -111,6 +111,12 @@ $(document).ready(function () {
         $('#toogleSetting').toggleClass("selected");
     });
 
+    let urlVars =  getUrlVars();
+
+    if(urlVars['debug'] === "true"){
+        $('#toggleContainer').show();
+        $('#fb-login').show();
+    }
 
 
     updateStatus();
@@ -152,4 +158,12 @@ function updateStatus(error) {
 
 function silentLoginFailed(url) {
     window.location.replace(url);
+}
+
+function getUrlVars() {
+    let vars = {};
+    let parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
 }

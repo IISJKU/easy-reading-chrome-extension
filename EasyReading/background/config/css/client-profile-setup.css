@@ -475,3 +475,7 @@ h2{
 .progress-indicator > li.is-current span {
     color: #9CBBF2;
 }
+
+p{
+    font-size: 1.12rem;;
+}

@@ -75,7 +75,17 @@ var cloudWebSocket = {
     },
     sendMessage: function (message) {
         if (this.webSocket) {
-            this.webSocket.send(message);
+            try{
+                if(this.webSocket.readyState === 1){
+                    this.webSocket.send(message);
+                }else{
+                    console.log("websocket not ready");
+                }
+
+            }catch (e) {
+                console.log(e);
+            }
+
         }
     },
 

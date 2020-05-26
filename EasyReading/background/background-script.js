@@ -288,14 +288,19 @@ var background = {
         chrome.tabs.query({},function (tabs) {
             tabs.forEach((tab) => {
                 console.log(tab);
-                if (tab.url.indexOf("https://"+cloudWebSocket.config.url) !== -1) {
-                    configTabs.push(tab);
-                }else if (tab.url.indexOf(backgroundUrl) !== -1) {
-                    if(includeOptionsPage){
+                try{
+                    if (tab.url.indexOf("https://"+cloudWebSocket.config.url) !== -1) {
                         configTabs.push(tab);
-                    }
+                    }else if (tab.url.indexOf(backgroundUrl) !== -1) {
+                        if(includeOptionsPage){
+                            configTabs.push(tab);
+                        }
 
+                    }
+                }catch (e) {
+                    console.log(e);
                 }
+
             });
             callback(configTabs);
         });
@@ -404,6 +409,9 @@ chrome.runtime.onConnect.addListener(function (p) {
                         tabId: p.sender.tab.id,
                         windowId: p.sender.tab.windowId,
                     };
+                    cloudWebSocket.sendMessage(JSON.stringify(m));
+                    break;
+                case "surveyResult":
                     cloudWebSocket.sendMessage(JSON.stringify(m));
                     break;
                 case "recommendationResult":
