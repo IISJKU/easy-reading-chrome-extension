@@ -2,6 +2,7 @@
 
   "manifest_version": 2,
   "name": "Easy Reading",
+  "description": "Easy Reading is a helping tool for the Web. It makes websites easier to understand",
   "version": "1.0",
   "default_locale": "en",
   "permissions": [
