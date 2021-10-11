@@ -18,6 +18,8 @@ $(document).ready(function () {
     $("#button3_text_1").html(chrome.i18n.getMessage("login_type_anonymous_p1"));
     $("#button3_text_2").html(chrome.i18n.getMessage("login_type_anonymous_p2"));
 
+    $("#or").html(chrome.i18n.getMessage("or"));
+
 
     let backgroundPage = chrome.extension.getBackgroundPage();
     let easyReadingConfig = backgroundPage.easyReading.config;
@@ -58,9 +60,6 @@ $(document).ready(function () {
     });
 
     $("#fbSignInButton").click(function () {
-
-        var x = document.getElementById("myAudio");
-        x.play();
 
         if(backgroundPage.background.userLoggedIn){
             updateStatus();

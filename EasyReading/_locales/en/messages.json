@@ -49,5 +49,9 @@
   },
   "login_type_anonymous_p2": {
     "message": "Your personal settings will not be saved.<br>Once you sign out all settings will be lost."
+  },
+
+  "or" : {
+    "message": "or"
   }
 }

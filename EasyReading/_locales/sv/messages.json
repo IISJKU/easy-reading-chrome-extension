@@ -49,5 +49,8 @@
   },
   "login_type_anonymous_p2": {
     "message": "Dina personliga inställningar kommer inte att sparas.<br>När du loggar ut kommer allt du har ställt in att tas bort."
+  },
+  "or" : {
+    "message": "eller"
   }
 }

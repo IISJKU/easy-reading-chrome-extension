@@ -44,10 +44,14 @@
   },
 
   "login_type_anonymous_p1": {
-    "message": "Sie möchten lieber unerkannt bleiben?<br>Dann können Sie sich anonym anmelden. "
+    "message": "Sie möchten lieber unerkannt bleiben? <br>Dann können Sie sich anonym anmelden."
   },
 
   "login_type_anonymous_p2": {
     "message": "Ihre Daten und Einstellungen werden nicht gespeichert.<br>Alle Einstellungen gehen verloren, wenn Sie Ihr Gerät neu starten. "
+  },
+
+  "or" : {
+    "message": "oder"
   }
 }
