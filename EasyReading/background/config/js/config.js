@@ -85,12 +85,18 @@ $(document).ready(function () {
             let cloudEndpointIndex = $('input[name=cloudServer]:checked', '.cloudServerSelect').val();
             backgroundPage.easyReading.updateEndpointIndex(cloudEndpointIndex);
 
-            let userLang = (navigator.language || navigator.userLanguage).split("-");
+            let userLang;
+            if (navigator.languages) {
+                userLang = navigator.languages[0];
+            } else if (navigator.language) {
+                userLang = navigator.language;
+            }
+            userLang = userLang.split("-");
+
             let userLangCode = "en";
             if(userLang.length > 0){
                 userLangCode = userLang[0];
             }
-
 
             let config = {
                 url: backgroundPage.easyReading.cloudEndpoints[cloudEndpointIndex].url,
