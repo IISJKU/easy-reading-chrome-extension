@@ -1,51 +1,128 @@
 {
-
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Easy Reading",
   "description": "Easy Reading is a helping tool for the Web. It makes websites easier to understand",
-  "version": "1.0",
+  "version": "2.0",
   "default_locale": "en",
   "permissions": [
     "storage",
     "activeTab",
-    "tabs",
-    "<all_urls>"
+    "tabs"
   ],
-  "content_security_policy": "script-src 'self' https://localhost https://easyreading-cloud.eu/ https://dev.easyreading-cloud.eu/ https://dev-easy-reading.eu-gb.mybluemix.net/ https://easy-reading.eu-gb.mybluemix.net/ https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/ https://apis.google.com/js/; object-src 'self'",
-
-  "background": {
-    "scripts": [
-      "lib/jquery/jquery.js",
-      "background/easy-reading.js",
-      "background/silent-login.js",
-      "background/script-manager.js",
-      "background/cloud-web-socket.js",
-      "background/background-script.js"
-    ]
+  "host_permissions": ["*://*/*"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   },
-
+  "background": {
+    "service_worker": "background/background.js",
+    "type": "module"
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["lib/jquery/jquery.js","content/content-script.js"]
+      "js": [
+        "content/content-script.js",
+        "content/tracking-dialog.js",
+        "content/lib/external/jquery-ui/jquery-ui.js",
+        "content/lib/external/micromodal/micromodal.min.js",
+        "content/lib/external/imagesloaded.pkgd.js",
+        "content/lib/external/popper.min.js",
+        "content/lib/external/tippy.min.js",
+        "content/lib/external/xregexp-all.js",
+        "content/lib/feedbackForm/feedbackForm.js",
+        "content/lib/alert-manager.js",
+        "content/lib/global-event-listener.js",
+        "content/lib/html-iterator.js",
+        "content/lib/iotypes.js",
+        "content/lib/iotype-utils.js",
+        "content/lib/sentence-tokenizer.js",
+        "content/lib/page-utils.js",
+        "content/lib/recommendationDialog.js",
+        "content/lib/request-manager.js",
+        "content/lib/sbd.js",
+        "content/lib/start-up.js",
+        "content/lib/sweetalert2.all.js",
+        "content/lib/text-marker.js",
+        "content/lib/ui-update-manager.js",
+        "content/components/presentation-implementation.js",
+        "content/components/user-interface-implementation.js",
+        "content/components/widget-implementation.js",
+        "content/components/busy-animation-implementation.js",
+        "content/widgets/auto-button/auto-button.js",
+        "content/widgets/button/button.js",
+        "content/widgets/continuous-choice-button/continuous-choice-button.js",
+        "content/widgets/single-choice-button/single-choice-button.js",
+        "content/widgets/text-selector/text-selector.js",
+        "content/widgets/two-state-button/two-state-button.js",
+        "content/user-interfaces/overlay/overlay-ui.js",
+        "content/user-interfaces/tab-slide-out/erMobileToolTips.js",
+        "content/user-interfaces/tab-slide-out/erTabSlideOut.js",
+        "content/user-interfaces/tab-slide-out/tab-slide-out-ui.js",
+        "content/presentations/annotated-paragraph-switcher/annotated-paragraph-switcher.js",
+        "content/presentations/audio-highlighter/audio-highlighter.js",
+        "content/presentations/content-replacement-switcher/content-replacement-switcher.js",
+        "content/presentations/paragraph-switcher/paragraph-switcher.js",
+        "content/presentations/tippy-tooltip/tippy-tooltip.js",
+        "content/engines/colorize/colorize.js",
+        "content/engines/font-magnification-tool/font-magnification-tool.js",
+        "content/engines/line-spacing-tool/line-spacing-tool.js",
+        "content/engines/readability/Readability-readerable.js",
+        "content/engines/readability/readabilityController.js",
+        "content/engines/readability/Readability.js",
+        "content/engines/screen-ruler/screen-ruler.js",
+        "content/busy-animations/spinner/spinner.js",
+        "content/classMapping.js"
+      ],
+      "css":[
+        "content/lib/external/jquery-ui/jquery-ui.css",
+        "content/lib/external/micromodal/micromodal.css",
+        "content/lib/feedbackForm/feedbackForm.css",
+        "content/busy-animations/spinner/spinner.css",
+        "content/lib/sweetalert2.css",
+        "content/engines/readability/style.css",
+        "content/engines/screen-ruler/screen-ruler.css",
+        "content/presentations/annotated-paragraph-switcher/annotated-paragraph-switcher.css",
+        "content/presentations/audio-highlighter/audio-highlighter.css",
+        "content/presentations/content-replacement-switcher/content-replacement-switcher.css",
+        "content/presentations/content-replacement-switcher/content-replacement-switcher.css",
+        "content/presentations/paragraph-switcher/paragraph-switcher.css",
+        "content/presentations/tippy-tooltip/tippy-tooltip.css",
+        "content/presentations/tippy-tooltip/light-border.css",
+        "content/widgets/auto-button/auto-button.css",
+        "content/widgets/auto-button/auto-button.css",
+        "content/widgets/button/button.css",
+        "content/widgets/continuous-choice-button/continuous-choice-button.css",
+        "content/widgets/single-choice-button/single-choice-button.css",
+        "content/widgets/text-selector/text-selector.css",
+        "content/widgets/two-state-button/two-state-button.css",
+        "content/user-interfaces/tab-slide-out/erMobileToolTips.css",
+        "content/user-interfaces/overlay/overlay-ui.css",
+        "content/user-interfaces/tab-slide-out/erTabSlideOut.css",
+        "content/user-interfaces/tab-slide-out/tab-slide-out-ui.css"
+      ]
     }
   ],
-  "options_ui": {
-    "page": "background/config/config.html",
-    "open_in_tab": true
-  },
-
-  "browser_action": {
+  "action": {
     "default_icon": {
       "100": "assets/logo/logo100.png"
     },
     "default_title": "Easy Reading"
   },
+  "options_ui": {
+    "page": "background/config/config.html",
+    "open_in_tab": true
+  },
+  "web_accessible_resources": [{
+    "resources": [
+      "background/config/img/*",
+      "background/config/audio/*"
+    ],
+    "matches": ["<all_urls>"]
+  }],
   "oauth2": {
     "client_id": "691784987953-qc6ohlnk2n6g38ea7mugvbgcfcpar6g6.apps.googleusercontent.com",
     "scopes":["openid", "email", "profile"]
   }
-
 
 }
 
