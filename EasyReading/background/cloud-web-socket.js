@@ -52,7 +52,7 @@ var cloudWebSocket = {
         try {
             background.onMessageFromCloud(message);
         } catch (e) {
-            console.log("ws: error on m essage- " + e);
+            console.log("ws: error on message- " + e);
             throw e; // intentionally re-throw (caught by window.onerror)
         }
     },
