@@ -49,7 +49,7 @@ var background = {
             case "getUUIDResult" :
 
                 //Try silent login
-                background.uuid = receivedMessage.result;
+                chrome.storage.local.set({ "uuid": receivedMessage.result});
                 silentLogin.login(this.config, receivedMessage.result);
 
                 break;

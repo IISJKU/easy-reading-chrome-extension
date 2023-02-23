@@ -1,79 +1,70 @@
 var silentLogin = {
-    httpRequest : null,
-    url: null,
-    uuid: null,
-    login: function (config,uuid) {
-        this.url = "https://" + config.url;
-        this.uuid = uuid;
-        this.config = config;
-        this.authMethod = config.authMethod;
-        this.httpRequest = new XMLHttpRequest();
-        this.httpRequest.open("POST",this.getLoginURL() );
-        this.httpRequest.onreadystatechange = this.onReadyStateChange;
-        this.httpRequest.send();
-    },
-    async onReadyStateChange(e){
-        if (e.target.readyState === XMLHttpRequest.DONE && e.target.status === 200) {
-            let authFailed = false;
-            try {
-                let response = JSON.parse(silentLogin.httpRequest.responseText);
+
+    login: async function (config, uuid) {
+        chrome.storage.local.set({ uuid });
+        chrome.storage.local.set({ config });
+
+        const loginUrl = await this.getLoginURL();
+        fetch(loginUrl, { method: 'POST' })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Network response was not ok.');
+                }
+            })
+            .then(response => {
                 console.log(response);
-
-                if(!response.success){
-                    authFailed = true;
+                if (!response.success) {
+                    this.handleAuthFailure();
+                } else {
+                    chrome.storage.local.set({ 'reconnect': false });
                 }
-            } catch (e) {
-                authFailed = true;
-            }
-
-            if(authFailed){
-
-                if(background.reconnect){
-
-                    background.reconnect = false;
-                    background.logoutUser("Lost connection!");
-
-                }else {
-
-                    let optionsPage = await background.getActiveOptionsPage();
-
-                    if(optionsPage){
-                        console.log("silent login:");
-                        console.log(silentLogin.getLoginURL());
-                        optionsPage.silentLoginFailed(silentLogin.getLoginURL());
-                    }else{
-                        await chrome.runtime.openOptionsPage();
-                        let optionsPage = await background.getActiveOptionsPage();
-
-                        if(optionsPage) {
-                            console.log("silent login:");
-                            console.log(silentLogin.getLoginURL());
-                            optionsPage.silentLoginFailed(silentLogin.getLoginURL());
-                        }
-
-                    }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+                this.handleAuthFailure();
+            });
+    },
+    async handleAuthFailure () {
+        if (await readLocalStorage('reconnect')) {
+            chrome.storage.local.set({ 'reconnect': false });
+            await background.logoutUser("Lost connection!");
+        } else {
+            let optionsPage = await background.getActiveOptionsPage();
+            const loginURL = await this.getLoginURL();
+            if (optionsPage) {
+                console.log("silent login:");
+                console.log(loginURL);
+                optionsPage.silentLoginFailed(loginURL);
+            } else {
+                chrome.runtime.openOptionsPage();
+                optionsPage = await background.getActiveOptionsPage();
+                if (optionsPage) {
+                    console.log("silent login:");
+                    console.log(loginURL);
+                    optionsPage.silentLoginFailed(loginURL);
+                } else {
+                    console.log('No options page found!');
                 }
-            }else{
-                background.reconnect = false;
             }
-
-        }else{
-            console.log("ERROR-Login");
-            console.log(e);
         }
     },
 
-    getLoginURL: function () {
+    getLoginURL: async function () {
+        const authMethod = await readLocalStorage('authMethod');
+        const uuid = await readLocalStorage('uuid');
+        const config = await readLocalStorage('config');
 
-        if(this.authMethod === "google"){
-            return this.url+"/client/login?token="+this.uuid;
-        }else if(this.authMethod === "fb"){
-            return this.url+"/client/login/facebook?token="+this.uuid;
-        }else if(this.authMethod === "anonym"){
-            return this.url+"/client/login/anonym?token="+this.uuid+"&lang="+this.config.lang;
+        const url = config?.url;
+        if (!url) {
+            console.log('No login url found in configuration!');
+            return '';
         }
 
-        //Google as default...
-        return this.url+"/client/login?token="+this.uuid;
+        const lang = config?.lang ? `&lang=${config.lang}` : '';
+        // Google is default path ('')
+        const path = authMethod === 'fb' ? '/facebook' : authMethod === 'anonym' ? '/anonym' : '';
+        return `https://${url}/client/login${path}?token=${uuid}${lang}`;
     }
 };
