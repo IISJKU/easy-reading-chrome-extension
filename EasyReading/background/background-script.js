@@ -22,7 +22,7 @@ var background = {
         background.uuid = null;
         cloudWebSocket.sendMessage(JSON.stringify({
             type: "getUUID",
-            redirectURL: chrome.extension.getURL('/background/config/config.html'),
+            redirectURL: chrome.runtime.getURL('/background/config/config.html'),
         }));
 
         setTimeout(function () {
@@ -63,7 +63,7 @@ var background = {
                     let configTabIds = [];
                     if (configTabs.length !== 0) {
                         configTabs.forEach((tab) => {
-                     //       chrome.tabs.update(tab.id, {url: chrome.extension.getURL('/background/config/config.html')});
+                     //       chrome.tabs.update(tab.id, {url: chrome.runtime.getURL('/background/config/config.html')});
                             configTabIds.push(tab.id);
                         });
                     }
@@ -283,7 +283,7 @@ var background = {
         let configTabs = [];
 
 
-        let backgroundUrl = chrome.extension.getURL('/background/config/config.html');
+        let backgroundUrl = chrome.runtime.getURL('/background/config/config.html');
 
         chrome.tabs.query({},function (tabs) {
             tabs.forEach((tab) => {
@@ -350,7 +350,7 @@ var background = {
                     await chrome.tabs.remove(configTabs[i].id);
                 }
 
-                await chrome.tabs.update(configTabs[0].id, {url: chrome.extension.getURL('/background/config/config.html')});
+                await chrome.tabs.update(configTabs[0].id, {url: chrome.runtime.getURL('/background/config/config.html')});
             }
 
             let activeOptionPages = background.getActiveOptionPages();
@@ -576,7 +576,7 @@ let tabUiConfigManager = {
 
 };
 
-chrome.browserAction.onClicked.addListener(() => {
+chrome.action.onClicked.addListener(() => {
 
     background.getOpenConfigTabs(function (configTabs) {
         if (configTabs.length > 0) {
