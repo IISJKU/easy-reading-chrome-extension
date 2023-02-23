@@ -14,7 +14,7 @@
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "background": {
-    "service_worker": "background/background.js",
+    "service_worker": "background/background-script.js",
     "type": "module"
   },
   "content_scripts": [
@@ -22,7 +22,6 @@
       "matches": ["<all_urls>"],
       "js": [
         "content/content-script.js",
-        "content/tracking-dialog.js",
         "content/lib/external/jquery-ui/jquery-ui.js",
         "content/lib/external/micromodal/micromodal.min.js",
         "content/lib/external/imagesloaded.pkgd.js",
