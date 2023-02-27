@@ -1,3 +1,9 @@
+try {
+    importScripts("util.js");
+} catch (e) {
+    console.log(e);
+}
+
 var easyReading = {
         config: null,
         cloudEndpoints: [
@@ -19,10 +25,8 @@ var easyReading = {
             "/client/setup",
         ],
         init: function () {
-
             chrome.storage.local.get(function (configuration) {
-
-                if ($.isEmptyObject(configuration)) {
+                if (isEmptyObject(configuration)) {
                     configuration = easyReading.getDefaultConfig();
 
                 }
@@ -30,17 +34,11 @@ var easyReading = {
                 easyReading.saveConfig();
                 easyReading.startup();
             });
-
-
         },
         startup: function () {
-
-
             chrome.runtime.openOptionsPage();
-
         },
         getDefaultConfig: function () {
-
             return {
                 cloudEndpointIndex: 0,
             };
@@ -67,20 +65,14 @@ var easyReading = {
         },
         isIgnoredUrl(url) {
             for (let i = 0; i < easyReading.ignoredConfigSites.length; i++) {
-
                 let currentURL = easyReading.cloudEndpoints[easyReading.config.cloudEndpointIndex].url;
                 if (url.includes(currentURL + easyReading.ignoredConfigSites[i])) {
                     return true;
                 }
-
             }
-
             return false;
         }
-
-
     }
 ;
-
 
 easyReading.init();

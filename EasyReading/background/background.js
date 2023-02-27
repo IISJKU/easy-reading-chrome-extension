@@ -1,4 +1,13 @@
-var ports = [];
+try {
+    importScripts(
+        "easy-reading.js",
+        "silent-login.js",
+        "script-manager.js",
+        "cloud-web-socket.js"
+    );
+} catch (e) {
+    console.log(e);
+}
 
 var background = {
     errorMsg: null,
@@ -7,9 +16,8 @@ var background = {
     userLoggedIn: false,
 
     connectToCloud: async function (config) {
-
-        if(cloudWebSocket.initWebSocket({...config})){
-            background.config = {...config};
+        if(cloudWebSocket.initWebSocket({...config})) {
+            chrome.storage.local.set({ "config": {...config}});
         }else{
             await background.logoutUser("Could not connect to cloud server!");
         }
@@ -48,9 +56,9 @@ var background = {
         switch (receivedMessage.type) {
             case "getUUIDResult" :
 
-                //Try silent login
+                // Try silent login
                 chrome.storage.local.set({ "uuid": receivedMessage.result});
-                silentLogin.login(this.config, receivedMessage.result);
+                await silentLogin.login();
 
                 break;
             case "userLoginResult":
@@ -612,4 +620,12 @@ chrome.action.onClicked.addListener(() => {
         } ,true);
 
 });
+
+chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+        if (request.message === "getCloudEndPoints") {
+            sendResponse({cloudEndpoints: easyReading.cloudEndpoints});
+        }
+    }
+);
 

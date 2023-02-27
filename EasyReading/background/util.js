@@ -9,3 +9,10 @@ const readLocalStorage = async (key) => {
         });
     });
 };
+
+const isEmptyObject = (obj) => {
+    for ( let name in obj ) {
+        return false;
+    }
+    return true;
+}

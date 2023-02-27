@@ -1,7 +1,6 @@
 var isEasyReadingConfigPage = true;
 
-$(document).ready(function () {
-
+$(document).ready(async function () {
 
     $("#heading1").html(chrome.i18n.getMessage("login_welcome"));
     $("#heading2_1").html(chrome.i18n.getMessage("login_type_text"));
@@ -20,26 +19,25 @@ $(document).ready(function () {
 
     $("#or").html(chrome.i18n.getMessage("or"));
 
+    let easyReadingConfig = await chrome.storage.sync.get(['config']);
+    const cloudEndpoints = (await chrome.runtime.sendMessage({message: "getCloudEndPoints"})).cloudEndpoints;
 
-    let backgroundPage = chrome.extension.getBackgroundPage();
-    let easyReadingConfig = backgroundPage.easyReading.config;
     let selectEndpointURLFieldSetHTML = '<fieldset class="cloudServerSelect">\n' +
         '    <legend>Select cloud host</legend>';
-    for(let i = 0; i < backgroundPage.easyReading.cloudEndpoints.length; i++){
 
-        if(i === parseInt(easyReadingConfig.cloudEndpointIndex)){
-            selectEndpointURLFieldSetHTML+=
-                ' <input type="radio" id="endpoint'+i+'" name="cloudServer" value="'+i+'" checked>\n' +
-                ' <label for="endpoint'+i+'">'+backgroundPage.easyReading.cloudEndpoints[i].description+'</label>\n' +
-                ' ';
-        }else{
-            selectEndpointURLFieldSetHTML+=
-                ' <input type="radio" id="endpoint'+i+'" name="cloudServer" value="'+i+'">\n' +
-                ' <label for="endpoint'+i+'">'+backgroundPage.easyReading.cloudEndpoints[i].description+'</label>\n' +
-                '';
-        }
-
+    let cloudEndpointIndex = 0;
+    if ("cloudEndpointIndex" in easyReadingConfig) {
+        cloudEndpointIndex = parseInt(easyReadingConfig.cloudEndpointIndex);
     }
+
+    for (let i = 0; i < cloudEndpoints.length; i++) {
+        selectEndpointURLFieldSetHTML += ' <input type="radio" id="endpoint'+i+'" name="cloudServer" value="'+i+'"';
+        if (i === cloudEndpointIndex) {
+            selectEndpointURLFieldSetHTML += ' checked';
+        }
+        selectEndpointURLFieldSetHTML += ">\n <label for=\"endpoint" + i + '">'+ cloudEndpoints[i].description + '</label>\n';
+    }
+
     selectEndpointURLFieldSetHTML+='</fieldset>';
     $("#cloudServerSelect").html(selectEndpointURLFieldSetHTML);
 
@@ -55,7 +53,7 @@ $(document).ready(function () {
                 authMethod: "google",
 
             };
-            backgroundPage.background.connectToCloud(config);
+            backgroundPage.connectToCloud();
         }
     });
 
@@ -73,7 +71,7 @@ $(document).ready(function () {
                 authMethod: "fb",
 
             };
-            backgroundPage.background.connectToCloud(config);
+            backgroundPage.connectToCloud();
         }
     });
 
@@ -104,7 +102,7 @@ $(document).ready(function () {
                 lang: userLangCode,
 
             };
-            backgroundPage.background.connectToCloud(config);
+            backgroundPage.connectToCloud();
 
         }
 

@@ -1,9 +1,6 @@
 var silentLogin = {
 
-    login: async function (config, uuid) {
-        chrome.storage.local.set({ uuid });
-        chrome.storage.local.set({ config });
-
+    login: async function () {
         const loginUrl = await this.getLoginURL();
         fetch(loginUrl, { method: 'POST' })
             .then(response => {
