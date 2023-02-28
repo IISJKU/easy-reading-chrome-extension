@@ -25,13 +25,11 @@ var easyReading = {
             "/client/setup",
         ],
         init: function () {
-            chrome.storage.local.get(function (configuration) {
+            chrome.storage.local.get("er_config", function (configuration) {
                 if (isEmptyObject(configuration)) {
                     configuration = easyReading.getDefaultConfig();
-
+                    easyReading.saveConfig(configuration);
                 }
-                easyReading.config = configuration;
-                easyReading.saveConfig();
                 easyReading.startup();
             });
         },
@@ -43,29 +41,21 @@ var easyReading = {
                 cloudEndpointIndex: 0,
             };
         },
-        getEndpoint: function () {
-            if (easyReading.cloudEndpoints[easyReading.config.cloudEndpointIndex]) {
-                cloudWebSocket.initWebSocket(easyReading.cloudEndpoints[easyReading.config.cloudEndpointIndex]);
-            } else {
-                cloudWebSocket.initWebSocket(easyReading.cloudEndpoints[0]);
+        saveConfig: function (config) {
+            if (!config) {
+                config = easyReading.getDefaultConfig();
             }
+            chrome.storage.local.set({"er_config": config});
         },
-        saveConfig: function () {
-
-            if (!easyReading.config) {
-                easyReading.config = easyReading.getDefaultConfig();
-            }
-            chrome.storage.local.set(easyReading.config);
-
-        },
-
         updateEndpointIndex: function (index) {
-            easyReading.config.cloudEndpointIndex = index;
-            easyReading.saveConfig();
+            easyReading.saveConfig({
+                cloudEndpointIndex: index,
+            });
         },
-        isIgnoredUrl(url) {
+        async isIgnoredUrl(url) {
+            const config = await chrome.storage.local.get("er_config");
             for (let i = 0; i < easyReading.ignoredConfigSites.length; i++) {
-                let currentURL = easyReading.cloudEndpoints[easyReading.config.cloudEndpointIndex].url;
+                let currentURL = easyReading.cloudEndpoints[config.cloudEndpointIndex || 0].url;
                 if (url.includes(currentURL + easyReading.ignoredConfigSites[i])) {
                     return true;
                 }
