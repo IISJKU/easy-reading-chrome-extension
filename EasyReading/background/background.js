@@ -623,8 +623,13 @@ chrome.action.onClicked.addListener(() => {
 
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
-        if (request.message === "getCloudEndPoints") {
-            sendResponse({cloudEndpoints: easyReading.cloudEndpoints});
+        switch(request.message) {
+            case "getCloudEndPoints":
+                sendResponse({cloudEndpoints: easyReading.cloudEndpoints});
+                break;
+            case "cloudWebSocketIsConnected":
+
+                break;
         }
     }
 );
